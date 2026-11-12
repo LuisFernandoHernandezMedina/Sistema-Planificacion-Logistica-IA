@@ -31,7 +31,21 @@ if RUTA_RAIZ not in sys.path:
 
 import matplotlib
 matplotlib.use("Agg")
+import matplotlib.path as mpath
 import matplotlib.pyplot as plt
+
+
+def _path_deepcopy_py314(self, memo):
+    """Evita RecursionError en matplotlib.path.Path.__deepcopy__ bajo Python 3.14."""
+    return mpath.Path(
+        copy.deepcopy(self.vertices, memo),
+        copy.deepcopy(self.codes, memo),
+        _interpolation_steps=self._interpolation_steps,
+        readonly=self.readonly,
+    )
+
+
+mpath.Path.__deepcopy__ = _path_deepcopy_py314
 
 from algoritmos.algoritmo_genetico import ejecutar_repeticiones as rep_ga
 from algoritmos.busqueda_heuristica import comparar_greedy_a_estrella
@@ -90,8 +104,9 @@ def _guardar_json(nombre, datos):
 
 def _procesar_figura(fig, nombre, para_web=False):
     """Renderiza la figura una sola vez, la guarda en disco y opcionalmente la devuelve en Base64."""
+    fig.tight_layout()
     buffer = io.BytesIO()
-    fig.savefig(buffer, format="png", dpi=110, bbox_inches="tight")
+    fig.savefig(buffer, format="png", dpi=110)
     datos_png = buffer.getvalue()
     plt.close(fig)
 
@@ -506,6 +521,6 @@ if __name__ == "__main__":
     resumen = ejecutar_experimentos()
     print("Mejor costo metaheurístico:")
     print("  Recocido simulado:", resumen["recocido_simulado"]["mejor_costo"])
-    print("  Algoritmo genético:", resumen["algoritmo_genético"]["mejor_costo"])
+    print("  Algoritmo genético:", resumen["algoritmo_genetico"]["mejor_costo"])
     print("CSV en:", DIR_RESULTADOS)
     print("Gráficas en:", DIR_GRAFICAS)
