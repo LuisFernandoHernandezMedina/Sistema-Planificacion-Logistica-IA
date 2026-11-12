@@ -88,19 +88,20 @@ def _guardar_json(nombre, datos):
     return ruta
 
 
-def _figura_base64(fig):
+def _procesar_figura(fig, nombre, para_web=False):
+    """Renderiza la figura una sola vez, la guarda en disco y opcionalmente la devuelve en Base64."""
     buffer = io.BytesIO()
     fig.savefig(buffer, format="png", dpi=110, bbox_inches="tight")
-    buffer.seek(0)
-    imagen = base64.b64encode(buffer.read()).decode("utf-8")
+    datos_png = buffer.getvalue()
     plt.close(fig)
-    return imagen
 
-
-def _guardar_figura(fig, nombre):
     ruta = os.path.join(DIR_GRAFICAS, nombre)
-    fig.savefig(ruta, dpi=110, bbox_inches="tight")
-    return ruta
+    with open(ruta, "wb") as archivo:
+        archivo.write(datos_png)
+
+    if para_web:
+        return base64.b64encode(datos_png).decode("utf-8")
+    return None
 
 
 def _clonar(escenario):
@@ -373,7 +374,6 @@ def ejecutar_experimentos(escenario=None, repeticiones=20, semilla_base=42,
     nombres_graf = []
 
     fig, ax = plt.subplots(figsize=(8, 4.5))
-    etiquetas = ["Greedy", "A*"]
     x = range(len(resumen_heur))
     ancho = 0.35
     ax.bar([i - ancho / 2 for i in x],
@@ -388,11 +388,9 @@ def ejecutar_experimentos(escenario=None, repeticiones=20, semilla_base=42,
     ax.set_title("Greedy vs A* en tres escenarios")
     ax.legend()
     ax.grid(True, axis="y", linestyle="--", alpha=0.4)
-    _guardar_figura(fig, "comparacion_heuristicas.png")
-    if para_web:
-        imagenes["comparacion_heuristicas"] = _figura_base64(fig)
-    else:
-        plt.close(fig)
+    img = _procesar_figura(fig, "comparacion_heuristicas.png", para_web)
+    if img:
+        imagenes["comparacion_heuristicas"] = img
     nombres_graf.append("comparacion_heuristicas.png")
 
     fig, ax = plt.subplots(figsize=(8, 4.5))
@@ -407,11 +405,9 @@ def ejecutar_experimentos(escenario=None, repeticiones=20, semilla_base=42,
     ax.set_title("Hill Climbing: costo inicial vs final")
     ax.legend()
     ax.grid(True, linestyle="--", alpha=0.4)
-    _guardar_figura(fig, "busqueda_local.png")
-    if para_web:
-        imagenes["busqueda_local"] = _figura_base64(fig)
-    else:
-        plt.close(fig)
+    img = _procesar_figura(fig, "busqueda_local.png", para_web)
+    if img:
+        imagenes["busqueda_local"] = img
     nombres_graf.append("busqueda_local.png")
 
     fig, ax = plt.subplots(figsize=(8, 4.5))
@@ -423,11 +419,9 @@ def ejecutar_experimentos(escenario=None, repeticiones=20, semilla_base=42,
     ax.set_ylabel("Mejor costo por ejecución")
     ax.set_title("Distribución de resultados (20 ejecuciones)")
     ax.grid(True, axis="y", linestyle="--", alpha=0.4)
-    _guardar_figura(fig, "comparacion_metaheuristicas.png")
-    if para_web:
-        imagenes["comparacion_metaheuristicas"] = _figura_base64(fig)
-    else:
-        plt.close(fig)
+    img = _procesar_figura(fig, "comparacion_metaheuristicas.png", para_web)
+    if img:
+        imagenes["comparacion_metaheuristicas"] = img
     nombres_graf.append("comparacion_metaheuristicas.png")
 
     fig, ax = plt.subplots(figsize=(8, 4.5))
@@ -440,11 +434,9 @@ def ejecutar_experimentos(escenario=None, repeticiones=20, semilla_base=42,
     ax.set_title("Convergencia de la primera ejecución")
     ax.legend()
     ax.grid(True, linestyle="--", alpha=0.4)
-    _guardar_figura(fig, "convergencia_metaheuristicas.png")
-    if para_web:
-        imagenes["convergencia_metaheuristicas"] = _figura_base64(fig)
-    else:
-        plt.close(fig)
+    img = _procesar_figura(fig, "convergencia_metaheuristicas.png", para_web)
+    if img:
+        imagenes["convergencia_metaheuristicas"] = img
     nombres_graf.append("convergencia_metaheuristicas.png")
 
     fig, ax = plt.subplots(figsize=(7, 4.5))
@@ -459,11 +451,9 @@ def ejecutar_experimentos(escenario=None, repeticiones=20, semilla_base=42,
     ax.set_title("Minimax vs poda alfa-beta")
     ax.legend()
     ax.grid(True, axis="y", linestyle="--", alpha=0.4)
-    _guardar_figura(fig, "minimax_alfabeta.png")
-    if para_web:
-        imagenes["minimax_alfabeta"] = _figura_base64(fig)
-    else:
-        plt.close(fig)
+    img = _procesar_figura(fig, "minimax_alfabeta.png", para_web)
+    if img:
+        imagenes["minimax_alfabeta"] = img
     nombres_graf.append("minimax_alfabeta.png")
 
     resumen = {
@@ -516,6 +506,6 @@ if __name__ == "__main__":
     resumen = ejecutar_experimentos()
     print("Mejor costo metaheurístico:")
     print("  Recocido simulado:", resumen["recocido_simulado"]["mejor_costo"])
-    print("  Algoritmo genético:", resumen["algoritmo_genetico"]["mejor_costo"])
+    print("  Algoritmo genético:", resumen["algoritmo_genético"]["mejor_costo"])
     print("CSV en:", DIR_RESULTADOS)
     print("Gráficas en:", DIR_GRAFICAS)
