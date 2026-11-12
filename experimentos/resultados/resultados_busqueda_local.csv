@@ -1,0 +1,11 @@
+﻿escenario,semilla,corrida,costo_inicial,costo_final,mejora,iteraciones,vecinos_meseta,es_meseta,orden
+Escenario logístico 12x12,42,1,116.0,66.0,50.0,2,0,False,0 1 2 3 4
+Escenario logístico 12x12,43,2,101.0,66.0,35.0,3,0,False,0 1 2 3 4
+Escenario logístico 12x12,44,3,117.0,82.0,35.0,2,0,False,0 1 4 2 3
+Escenario logístico 12x12,45,4,101.0,66.0,35.0,3,0,False,0 1 2 3 4
+Escenario logístico 12x12,46,5,121.0,66.0,55.0,3,0,False,0 1 2 3 4
+Escenario logístico 12x12,47,6,66.0,66.0,0.0,0,0,False,0 1 2 3 4
+Escenario logístico 12x12,48,7,82.0,66.0,16.0,1,0,False,0 1 2 3 4
+Escenario logístico 12x12,49,8,98.0,66.0,32.0,2,0,False,0 1 2 3 4
+Escenario logístico 12x12,50,9,118.0,77.0,41.0,2,0,False,0 2 3 1 4
+Escenario logístico 12x12,51,10,96.0,66.0,30.0,2,0,False,0 1 2 3 4

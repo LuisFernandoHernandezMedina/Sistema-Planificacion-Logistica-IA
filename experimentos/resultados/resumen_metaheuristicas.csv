@@ -1,0 +1,3 @@
+﻿metodo,repeticiones,mejor_costo,costo_promedio,desviacion_estandar,peor_costo,evaluaciones_promedio,tiempo_promedio_ms
+recocido_simulado,20,66.0,66.0,0.0,66.0,11201.0,27.69
+algoritmo_genetico,20,66.0,66.55,2.3974,77.0,9060.0,56.932

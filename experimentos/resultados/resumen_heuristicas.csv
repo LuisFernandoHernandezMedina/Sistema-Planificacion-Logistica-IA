@@ -1,0 +1,4 @@
+﻿escenario,costo_greedy,costo_astar,nodos_greedy,nodos_astar,tiempo_greedy_ms,tiempo_astar_ms,diferencia_costo
+base,53.0,34.0,23,111,0.101,0.318,-19.0
+costos_altos,84.79999999999998,54.40000000000002,23,111,0.078,0.303,-30.4
+mas_obstaculos,53.0,35.0,23,111,0.096,0.297,-18.0

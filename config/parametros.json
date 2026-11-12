@@ -1,0 +1,41 @@
+{
+  "semilla_global": 42,
+  "busqueda_heuristica": {
+    "movimientos": 4,
+    "heuristica": "manhattan * costo_minimo"
+  },
+  "busqueda_local": {
+    "soluciones_iniciales": 10,
+    "max_iteraciones": 200,
+    "vecindad": "intercambio de dos entregas"
+  },
+  "recocido_simulado": {
+    "temperatura_inicial": 50.0,
+    "temperatura_final": 0.01,
+    "factor_enfriamiento": 0.97,
+    "iteraciones_por_temperatura": 40,
+    "ejecuciones": 20
+  },
+  "algoritmo_genetico": {
+    "tamano_poblacion": 60,
+    "generaciones": 150,
+    "prob_mutacion": 0.15,
+    "prob_cruce": 0.9,
+    "tamano_torneo": 3,
+    "elitismo": true,
+    "ejecuciones": 20
+  },
+  "teoria_juegos": {
+    "estrategias_empresa": 3,
+    "estrategias_competidor": 3
+  },
+  "minimax": {
+    "profundidad_maxima": 12,
+    "usar_poda": true
+  },
+  "experimentos": {
+    "repeticiones_metaheuristicas": 20,
+    "repeticiones_busqueda_local": 10,
+    "escenarios_heuristicos": 3
+  }
+}

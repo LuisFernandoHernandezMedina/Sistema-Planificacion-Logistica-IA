@@ -1,0 +1,2 @@
+﻿algoritmo_origen,costo_ruta_base,factor_competidor,costo_total_integrado,estrategia_empresa,estrategia_competidor,factible,ruta
+Hill Climbing,66.0,1.2537,102.7442,Ruta rápida,Bloqueo de ruta,False,Inicio -> Entrega 1 -> Entrega 2 -> Entrega 3 -> Entrega 4 -> Entrega 5 -> Destino

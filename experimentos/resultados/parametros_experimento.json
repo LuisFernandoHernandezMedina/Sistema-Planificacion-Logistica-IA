@@ -1,0 +1,53 @@
+{
+  "escenario": "Escenario logístico 12x12",
+  "filas": 12,
+  "columnas": 12,
+  "entregas": 5,
+  "semilla_base": 42,
+  "repeticiones": 20,
+  "parametros": {
+    "semilla_global": 42,
+    "busqueda_local": {
+      "soluciones_iniciales": 10,
+      "max_iteraciones": 200,
+      "vecindad": "intercambio de dos entregas"
+    },
+    "recocido_simulado": {
+      "temperatura_inicial": 50.0,
+      "temperatura_final": 0.01,
+      "factor_enfriamiento": 0.97,
+      "iteraciones_por_temperatura": 40,
+      "ejecuciones": 20
+    },
+    "algoritmo_genetico": {
+      "tamano_poblacion": 60,
+      "generaciones": 150,
+      "prob_mutacion": 0.15,
+      "prob_cruce": 0.9,
+      "tamanio_torneo": 3,
+      "elitismo": true,
+      "tamano_torneo": 3,
+      "ejecuciones": 20
+    },
+    "minimax": {
+      "profundidad_maxima": 12,
+      "usar_poda": true
+    },
+    "busqueda_heuristica": {
+      "movimientos": 4,
+      "heuristica": "manhattan * costo_minimo"
+    },
+    "teoria_juegos": {
+      "estrategias_empresa": 3,
+      "estrategias_competidor": 3
+    },
+    "experimentos": {
+      "repeticiones_metaheuristicas": 20,
+      "repeticiones_busqueda_local": 10,
+      "escenarios_heuristicos": 3
+    }
+  },
+  "huella_codigo": "8e7e094964113051",
+  "python": "3.12.3",
+  "generado": "2026-11-12 00:16:21"
+}

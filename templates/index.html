@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Logístico Inteligente - Segundo Parcial</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="cabecera">
+        <h1>Sistema Inteligente de Planificación Logística</h1>
+        <p class="subtitulo">Búsqueda heurística · Búsqueda local · Metaheurísticas · Teoría de juegos · Minimax</p>
+        <div class="estado-cabecera">
+            <span id="nombre-escenario">Escenario logístico 12x12</span>
+            <span id="estado-escenario" class="insignia insignia-ok">Válido</span>
+        </div>
+    </header>
+
+    <nav class="pestanas" id="pestanas">
+        <button class="tab-boton activo" data-tab="escenario">1. Escenario</button>
+        <button class="tab-boton" data-tab="heuristica">2. Búsqueda heurística</button>
+        <button class="tab-boton" data-tab="local">3. Búsqueda local</button>
+        <button class="tab-boton" data-tab="meta">4. Metaheurísticas</button>
+        <button class="tab-boton" data-tab="juegos">5. Teoría de juegos</button>
+        <button class="tab-boton" data-tab="minimax">6. Minimax</button>
+        <button class="tab-boton" data-tab="experimentos">7. Experimentos</button>
+        <button class="tab-boton" data-tab="plan">8. Planificación final</button>
+    </nav>
+
+    <main class="contenedor">
+        <!-- ================================================== -->
+        <!-- 1. ESCENARIO -->
+        <!-- ================================================== -->
+        <section id="tab-escenario" class="panel activo">
+            <div class="rejilla-dos">
+                <div class="tarjeta">
+                    <h2>Cuadrícula 12 × 12</h2>
+                    <p class="ayuda">
+                        Selecciona un modo y haz clic en una celda. En modo
+                        <strong>mover</strong>, primero haz clic sobre un punto y
+                        después sobre la celda destino. Clic derecho sobre una
+                        entrega para eliminarla.
+                    </p>
+                    <div class="barra-modos">
+                        <button class="boton boton-mini activo" data-modo="mover" id="modo-mover">Mover punto</button>
+                        <button class="boton boton-mini boton-secundario" data-modo="obstaculo" id="modo-obstaculo">Alternar obstáculo</button>
+                        <button class="boton boton-mini boton-secundario" data-modo="costo" id="modo-costo">Editar costo</button>
+                    </div>
+
+                    <div class="lienzo-contenedor">
+                        <svg id="lienzo-editor" class="lienzo" viewBox="0 0 12 12"
+                             preserveAspectRatio="xMidYMid meet"></svg>
+                    </div>
+
+                    <div class="leyenda">
+                        <span><i class="muestra inicio"></i> Inicio</span>
+                        <span><i class="muestra entrega"></i> Entrega</span>
+                        <span><i class="muestra destino"></i> Destino</span>
+                        <span><i class="muestra obstaculo"></i> Obstáculo</span>
+                        <span><i class="muestra ruta"></i> Ruta</span>
+                    </div>
+
+                    <p id="info-seleccion" class="ayuda info-seleccion">Ningún punto seleccionado.</p>
+
+                    <div id="panel-costo" class="panel-inline oculto">
+                        <label class="campo-inline">
+                            <span>Costo de la celda seleccionada</span>
+                            <input type="number" id="costo-celda" min="0.1" step="0.1">
+                        </label>
+                        <button class="boton boton-mini" id="btn-aplicar-costo">Aplicar costo</button>
+                    </div>
+
+                    <p id="mensajes-escenario" class="mensaje oculto"></p>
+                </div>
+
+                <div class="tarjeta">
+                    <h2>Puntos y entregas</h2>
+                    <div class="tabla-contenedor">
+                        <table class="tabla-puntos">
+                            <thead>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Nombre</th>
+                                    <th>X</th>
+                                    <th>Y</th>
+                                    <th>Demanda</th>
+                                    <th>Recursos</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-puntos-body"></tbody>
+                        </table>
+                    </div>
+                    <div class="barra-acciones">
+                        <button class="boton boton-mini" id="btn-agregar-entrega">+ Agregar entrega</button>
+                        <button class="boton boton-mini boton-secundario" id="btn-validar">Validar escenario</button>
+                        <button class="boton boton-mini boton-secundario" id="btn-guardar">Guardar escenario</button>
+                        <button class="boton boton-mini boton-peligro" id="btn-restablecer">Restablecer</button>
+                    </div>
+
+                    <h3 class="subtitulo-seccion">Recursos disponibles</h3>
+                    <div id="recursos-editor" class="rejilla-campos"></div>
+                    <button class="boton boton-mini boton-secundario" id="btn-guardar-recursos">Guardar recursos</button>
+
+                    <h3 class="subtitulo-seccion">Competidor</h3>
+                    <div class="rejilla-campos">
+                        <label class="campo-inline"><span>Nombre</span><input type="text" id="comp-nombre"></label>
+                        <label class="campo-inline"><span>Efecto en costo</span><input type="number" id="comp-efecto" step="0.01" min="1"></label>
+                        <label class="campo-inline"><span>Reducción de recursos</span><input type="number" id="comp-reduccion" step="0.01" min="0" max="1"></label>
+                        <label class="campo-inline"><span>Agresividad</span><input type="number" id="comp-agresividad" step="0.01" min="0" max="1"></label>
+                    </div>
+                    <button class="boton boton-mini boton-secundario" id="btn-guardar-competidor">Guardar competidor</button>
+                </div>
+            </div>
+
+            <div class="tarjeta">
+                <h2>Cargar, guardar y exportar escenario</h2>
+                <p class="ayuda">
+                    El escenario se puede modificar con archivos externos JSON o CSV.
+                    El CSV combinado contiene una fila por celda con columnas
+                    x, y, costo, obstaculo, tipo, nombre, id, demanda y recursos.
+                </p>
+                <div class="barra-acciones">
+                    <input type="file" id="archivo-escenario" accept=".json,.csv">
+                    <button class="boton boton-mini" id="btn-cargar">Cargar archivo</button>
+                    <a class="boton boton-mini boton-secundario" href="/api/escenario/exportar/json">Exportar JSON</a>
+                    <a class="boton boton-mini boton-secundario" href="/api/escenario/exportar/csv">Exportar CSV</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================== -->
+        <!-- 2. BÚSQUEDA HEURÍSTICA -->
+        <!-- ================================================== -->
+        <section id="tab-heuristica" class="panel">
+            <div class="tarjeta">
+                <h2>Módulo A: Greedy Best-First Search vs A*</h2>
+                <p class="ayuda">
+                    Heurística: <strong>h(n) = Manhattan(n, destino) × costo mínimo de celda</strong>.
+                    Es admisible porque cada paso cuesta al menos el costo mínimo.
+                    A* usa f(n) = g(n) + h(n) y garantiza optimalidad con costos
+                    positivos y heurística admisible. Greedy usa solo h(n).
+                </p>
+                <div class="barra-acciones">
+                    <button class="boton" id="btn-heuristica">Ejecutar Greedy y A*</button>
+                </div>
+                <p id="mensaje-heuristica" class="mensaje oculto"></p>
+            </div>
+
+            <div id="resultados-heuristica" class="oculto">
+                <div class="rejilla-dos">
+                    <div class="tarjeta">
+                        <h2>Comparación de métricas</h2>
+                        <div id="met-heuristica" class="rejilla-tarjetas"></div>
+                        <table class="tabla-datos">
+                            <thead>
+                                <tr><th>Algoritmo</th><th>Costo</th><th>Nodos expandidos</th><th>Tiempo (ms)</th><th>Longitud</th><th>Estado</th></tr>
+                            </thead>
+                            <tbody id="tabla-heuristica"></tbody>
+                        </table>
+                    </div>
+                    <div class="tarjeta">
+                        <h2>Rutas sobre la cuadrícula</h2>
+                        <div class="lienzo-contenedor">
+                            <svg id="lienzo-heuristica" class="lienzo" viewBox="0 0 12 12"
+                                 preserveAspectRatio="xMidYMid meet"></svg>
+                        </div>
+                        <div class="leyenda">
+                            <span><i class="muestra greedy"></i> Greedy</span>
+                            <span><i class="muestra astar"></i> A*</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================== -->
+        <!-- 3. BÚSQUEDA LOCAL -->
+        <!-- ================================================== -->
+        <section id="tab-local" class="panel">
+            <div class="tarjeta">
+                <h2>Módulo B: Hill Climbing sobre el orden de entregas</h2>
+                <p class="ayuda">
+                    Vecindad por intercambio de dos entregas. Se ejecutan al menos
+                    diez soluciones iniciales y se selecciona la mejor vecina.
+                    La evaluación usa la matriz de costos mínimos calculada con A*.
+                </p>
+                <div class="rejilla-campos">
+                    <label class="campo-inline"><span>Soluciones iniciales</span><input type="number" id="local-iniciales" value="10" min="10"></label>
+                    <label class="campo-inline"><span>Máx. iteraciones</span><input type="number" id="local-iteraciones" value="200" min="1"></label>
+                    <label class="campo-inline"><span>Semilla</span><input type="number" id="local-semilla" value="42"></label>
+                </div>
+                <button class="boton" id="btn-local">Ejecutar Hill Climbing</button>
+                <p id="mensaje-local" class="mensaje oculto"></p>
+            </div>
+
+            <div id="resultados-local" class="oculto">
+                <div class="rejilla-dos">
+                    <div class="tarjeta">
+                        <h2>Resultados</h2>
+                        <div id="met-local" class="rejilla-tarjetas"></div>
+                        <p class="ruta-texto" id="ruta-local"></p>
+                        <div id="analisis-local" class="bloque-analisis"></div>
+                    </div>
+                    <div class="tarjeta">
+                        <h2>Mejor ruta</h2>
+                        <div class="lienzo-contenedor">
+                            <svg id="lienzo-local" class="lienzo" viewBox="0 0 12 12"
+                                 preserveAspectRatio="xMidYMid meet"></svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="tarjeta">
+                    <h2>Las 10 soluciones iniciales</h2>
+                    <div class="tabla-contenedor">
+                        <table class="tabla-datos">
+                            <thead>
+                                <tr><th>Corrida</th><th>Costo inicial</th><th>Costo final</th><th>Mejora</th><th>Iteraciones</th><th>Meseta</th><th>Orden</th></tr>
+                            </thead>
+                            <tbody id="tabla-local"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================== -->
+        <!-- 4. METAHEURÍSTICAS -->
+        <!-- ================================================== -->
+        <section id="tab-meta" class="panel">
+            <div class="rejilla-dos">
+                <div class="tarjeta">
+                    <h2>Recocido simulado</h2>
+                    <p class="ayuda">
+                        Aceptación: si delta &le; 0 se acepta; si delta &gt; 0 se acepta
+                        con P = exp(-delta / T). Enfriamiento geométrico T = alpha · T.
+                    </p>
+                    <div class="rejilla-campos">
+                        <label class="campo-inline"><span>Temperatura inicial</span><input type="number" id="sa-t0" value="50" step="0.1"></label>
+                        <label class="campo-inline"><span>Temperatura final</span><input type="number" id="sa-tf" value="0.01" step="0.001"></label>
+                        <label class="campo-inline"><span>Factor de enfriamiento</span><input type="number" id="sa-alpha" value="0.97" step="0.001"></label>
+                        <label class="campo-inline"><span>Iteraciones por temperatura</span><input type="number" id="sa-iter" value="40" min="1"></label>
+                        <label class="campo-inline"><span>Semilla</span><input type="number" id="sa-semilla" value="42"></label>
+                    </div>
+                    <button class="boton" id="btn-sa">Ejecutar recocido</button>
+                    <p id="mensaje-sa" class="mensaje oculto"></p>
+                    <div id="resultados-sa" class="oculto">
+                        <div id="met-sa" class="rejilla-tarjetas"></div>
+                        <p class="ruta-texto" id="ruta-sa"></p>
+                        <div class="grafica-contenedor" id="grafica-sa"></div>
+                    </div>
+                </div>
+
+                <div class="tarjeta">
+                    <h2>Algoritmo genético</h2>
+                    <p class="ayuda">
+                        Población, torneo, Order Crossover (OX), mutación por
+                        intercambio y elitismo. Adaptado del Proyecto 5.
+                    </p>
+                    <div class="rejilla-campos">
+                        <label class="campo-inline"><span>Población</span><input type="number" id="ga-pob" value="60" min="4"></label>
+                        <label class="campo-inline"><span>Generaciones</span><input type="number" id="ga-gen" value="150" min="1"></label>
+                        <label class="campo-inline"><span>Prob. mutación</span><input type="number" id="ga-mut" value="0.15" step="0.01" min="0" max="1"></label>
+                        <label class="campo-inline"><span>Prob. cruce</span><input type="number" id="ga-cruce" value="0.9" step="0.01" min="0" max="1"></label>
+                        <label class="campo-inline"><span>Torneo</span><input type="number" id="ga-torneo" value="3" min="2"></label>
+                        <label class="campo-inline"><span>Semilla</span><input type="number" id="ga-semilla" value="42"></label>
+                    </div>
+                    <button class="boton" id="btn-ga">Ejecutar algoritmo genético</button>
+                    <p id="mensaje-ga" class="mensaje oculto"></p>
+                    <div id="resultados-ga" class="oculto">
+                        <div id="met-ga" class="rejilla-tarjetas"></div>
+                        <p class="ruta-texto" id="ruta-ga"></p>
+                        <div class="grafica-contenedor" id="grafica-ga"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tarjeta">
+                <h2>Comparación de la última ejecución</h2>
+                <table class="tabla-datos">
+                    <thead><tr><th>Método</th><th>Mejor costo</th><th>Evaluaciones</th><th>Tiempo (ms)</th><th>Iteraciones / generaciones</th></tr></thead>
+                    <tbody id="tabla-meta-body"></tbody>
+                </table>
+                <p id="mensaje-meta" class="ayuda">Ejecuta ambos métodos para comparar.</p>
+            </div>
+        </section>
+
+        <!-- ================================================== -->
+        <!-- 5. TEORÍA DE JUEGOS -->
+        <!-- ================================================== -->
+        <section id="tab-juegos" class="panel">
+            <div class="tarjeta">
+                <h2>Módulo D: Empresa vs competidor</h2>
+                <p class="ayuda">
+                    Jugador 1 (empresa): ruta rápida, ruta económica o reserva
+                    preventiva. Jugador 2 (competidor): bloqueo de ruta, presión
+                    de costos o no intervención. Los equilibrios se calculan sobre
+                    la matriz; no se fuerzan resultados.
+                </p>
+                <button class="boton" id="btn-juego">Analizar juego</button>
+                <p id="mensaje-juego" class="mensaje oculto"></p>
+            </div>
+            <div id="resultados-juego" class="oculto">
+                <div class="tarjeta">
+                    <h2>Matriz de pagos (empresa, competidor)</h2>
+                    <div class="matriz-contenedor" id="matriz-juego"></div>
+                </div>
+                <div class="rejilla-dos">
+                    <div class="tarjeta">
+                        <h2>Mejores respuestas y dominancia</h2>
+                        <div id="analisis-juego"></div>
+                    </div>
+                    <div class="tarjeta">
+                        <h2>Interpretación logística</h2>
+                        <div id="interpretacion-juego"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================== -->
+        <!-- 6. MINIMAX -->
+        <!-- ================================================== -->
+        <section id="tab-minimax" class="panel">
+            <div class="tarjeta">
+                <h2>Módulo E: Minimax y poda alfa-beta</h2>
+                <p class="ayuda">
+                    Subproblema: la empresa (MAX) y el competidor (MIN) eligen
+                    alternativamente contratos de acceso a entregas. Utilidad =
+                    suma de demandas aseguradas por MAX menos suma negada por MIN.
+                    Si se limita la profundidad se usa una evaluación aproximada.
+                </p>
+                <div class="rejilla-campos">
+                    <label class="campo-inline">
+                        <span>Profundidad máxima (vacío = completa)</span>
+                        <input type="number" id="mm-profundidad" min="1" placeholder="completa">
+                    </label>
+                </div>
+                <button class="boton" id="btn-minimax">Comparar Minimax y alfa-beta</button>
+                <p id="mensaje-minimax" class="mensaje oculto"></p>
+            </div>
+            <div id="resultados-minimax" class="oculto">
+                <div class="rejilla-dos">
+                    <div class="tarjeta"><h2>Minimax sin poda</h2><div id="mm-sin" class="rejilla-tarjetas"></div></div>
+                    <div class="tarjeta"><h2>Minimax con alfa-beta</h2><div id="mm-con" class="rejilla-tarjetas"></div></div>
+                </div>
+                <div class="tarjeta">
+                    <h2>Verificación y línea principal</h2>
+                    <div id="mm-comparacion"></div>
+                    <p class="ruta-texto" id="mm-linea"></p>
+                    <div class="grafica-contenedor" id="grafica-minimax"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================== -->
+        <!-- 7. EXPERIMENTOS -->
+        <!-- ================================================== -->
+        <section id="tab-experimentos" class="panel">
+            <div class="tarjeta">
+                <h2>Experimentos reproducibles</h2>
+                <p class="ayuda">
+                    Ejecuta 20 corridas de recocido simulado y 20 del algoritmo
+                    genético, además de la comparación heurística en tres
+                    escenarios. Los resultados se guardan en CSV y las gráficas
+                    en PNG dentro de <code>experimentos/</code>.
+                </p>
+                <div class="rejilla-campos">
+                    <label class="campo-inline"><span>Repeticiones por método</span><input type="number" id="exp-repeticiones" value="20" min="1" max="100"></label>
+                    <label class="campo-inline"><span>Semilla base</span><input type="number" id="exp-semilla" value="42"></label>
+                </div>
+                <div class="barra-acciones">
+                    <button class="boton" id="btn-experimentos">Ejecutar experimentos</button>
+                    <button class="boton boton-mini boton-secundario" id="btn-actualizar-archivos">Actualizar archivos</button>
+                </div>
+                <p id="mensaje-experimentos" class="mensaje oculto"></p>
+            </div>
+            <div id="resultados-experimentos" class="oculto">
+                <div class="tarjeta">
+                    <h2>Resumen</h2>
+                    <div id="resumen-experimentos"></div>
+                </div>
+                <div class="tarjeta">
+                    <h2>Gráficas generadas</h2>
+                    <div id="graficas-experimentos" class="rejilla-graficas"></div>
+                </div>
+                <div class="tarjeta">
+                    <h2>Archivos CSV y gráficas</h2>
+                    <div id="archivos-experimentos"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================== -->
+        <!-- 8. PLANIFICACIÓN FINAL -->
+        <!-- ================================================== -->
+        <section id="tab-plan" class="panel">
+            <div class="tarjeta">
+                <h2>Planificación logística integrada</h2>
+                <p class="ayuda">
+                    Ejecuta el flujo completo: validación, A*/Greedy, Hill
+                    Climbing, recocido simulado, algoritmo genético, teoría de
+                    juegos y Minimax. El resultado final aplica la estrategia del
+                    competidor y la asignación de recursos.
+                </p>
+                <button class="boton" id="btn-plan">Ejecutar integración completa</button>
+                <p id="mensaje-plan" class="mensaje oculto"></p>
+            </div>
+            <div id="resultados-plan" class="oculto">
+                <div class="rejilla-dos">
+                    <div class="tarjeta">
+                        <h2>Resumen de la planificación</h2>
+                        <div id="resumen-plan"></div>
+                        <p class="ruta-texto" id="ruta-plan"></p>
+                        <div id="avisos-plan"></div>
+                    </div>
+                    <div class="tarjeta">
+                        <h2>Ruta final sobre la cuadrícula</h2>
+                        <div class="lienzo-contenedor">
+                            <svg id="lienzo-plan" class="lienzo" viewBox="0 0 12 12"
+                                 preserveAspectRatio="xMidYMid meet"></svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="rejilla-dos">
+                    <div class="tarjeta">
+                        <h2>Comparación de métodos</h2>
+                        <table class="tabla-datos">
+                            <thead><tr><th>Método</th><th>Costo</th><th>Evaluaciones</th><th>Tiempo (ms)</th><th>Mejor</th></tr></thead>
+                            <tbody id="tabla-plan-metodos"></tbody>
+                        </table>
+                    </div>
+                    <div class="tarjeta">
+                        <h2>Asignación de recursos</h2>
+                        <div id="recursos-plan"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="pie">
+        <p>Proyecto del Segundo Parcial · Sistema logístico integrado · Ejecución local con Flask</p>
+    </footer>
+
+    <!-- Carga -->
+    <div id="cargando" class="cargando oculto">
+        <div class="spinner"></div>
+        <p id="texto-cargando">Procesando...</p>
+    </div>
+
+    <!-- Modal de entrega -->
+    <div id="modal-entrega" class="modal oculto">
+        <div class="modal-contenido">
+            <h3 id="modal-entrega-titulo">Agregar entrega</h3>
+            <input type="hidden" id="entrega-id">
+            <label class="campo"><span>Nombre</span><input type="text" id="entrega-nombre" maxlength="30"></label>
+            <div class="rejilla-dos-campos">
+                <label class="campo"><span>X (columna)</span><input type="number" id="entrega-x" min="0"></label>
+                <label class="campo"><span>Y (fila)</span><input type="number" id="entrega-y" min="0"></label>
+            </div>
+            <label class="campo"><span>Demanda</span><input type="number" id="entrega-demanda" min="1" value="1"></label>
+            <div id="entrega-recursos" class="rejilla-campos"></div>
+            <p id="entrega-error" class="modal-error oculto"></p>
+            <div class="modal-acciones">
+                <button class="boton boton-mini boton-secundario" id="btn-cancelar-entrega">Cancelar</button>
+                <button class="boton boton-mini" id="btn-guardar-entrega">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
